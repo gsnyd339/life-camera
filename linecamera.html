@@ -2,10 +2,21 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>カメラ起動テスト</title>
+    <title>カメラ起動ボタン</title>
   </head>
   <body>
-    <h1>カメラ起動テスト</h1>
-    <input type="file" accept="image/*" capture="environment">
+    <h1>カメラで写真を撮る</h1>
+
+    <!-- このボタンを押すとカメラが起動されるように -->
+    <button id="camera-button">写真を撮る</button>
+    <input type="file" id="file-input" accept="image/*" capture="environment" style="display:none">
+
+    <!-- JavaScriptをHTMLの中に埋め込む -->
+    <script>
+      // JavaScriptでボタンを押したら file-input を開く
+      document.getElementById('camera-button').addEventListener('click', function () {
+        document.getElementById('file-input').click();
+      });
+    </script>
   </body>
 </html>
