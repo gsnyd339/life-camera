@@ -3,17 +3,32 @@
   <head>
     <meta charset="UTF-8">
     <title>カメラ起動ボタン</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        text-align: center;
+        margin-top: 50px;
+      }
+      #camera-button {
+        padding: 1em 2em;
+        background-color: #28a745;
+        color: white;
+        font-size: 16px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      #file-input {
+        display: none;
+      }
+    </style>
   </head>
   <body>
     <h1>カメラで写真を撮る</h1>
-
-    <!-- このボタンを押すとカメラが起動されるように -->
     <button id="camera-button">写真を撮る</button>
-    <input type="file" id="file-input" accept="image/*" capture="environment" style="display:none">
+    <input type="file" id="file-input" accept="image/*" capture="environment">
 
-    <!-- JavaScriptをHTMLの中に埋め込む -->
     <script>
-      // JavaScriptでボタンを押したら file-input を開く
       document.getElementById('camera-button').addEventListener('click', function () {
         document.getElementById('file-input').click();
       });
