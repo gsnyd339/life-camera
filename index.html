@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>処方箋を送る</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 40px;
+      background: #f9f9f9;
+    }
+    #photoButton {
+      background-color: #28a745;
+      color: white;
+      font-size: 24px;
+      padding: 20px 40px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+  </style>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body>
+  <h1>処方箋の写真を送る</h1>
+  <input type="file" accept="image/*" capture="environment" id="imageInput" style="display: none;" />
+  <button id="photoButton">処方箋を送る</button>
+
+  <script>
+    const liffId = '2007826827-b9Epz7NP'; // 後ほど説明
+
+    async function main() {
+      await liff.init({ liffId });
+
+      document.getElementById("photoButton").addEventListener("click", () => {
+        document.getElementById("imageInput").click();
+      });
+
+      document.getElementById("imageInput").addEventListener("change", async function (event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async function () {
+          const imageDataUrl = reader.result;
+          try {
+            await liff.shareTargetPicker([
+              {
+                type: "image",
+                originalContentUrl: imageDataUrl,
+                previewImageUrl: imageDataUrl
+              }
+            ]);
+            alert("写真を送信しました！");
+          } catch (e) {
+            alert("送信に失敗しました");
+            console.error(e);
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    main();
+  </script>
+</body>
+</html>
