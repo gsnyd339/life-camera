@@ -1,69 +1,81 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8" />
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>処方箋を送る</title>
   <style>
     body {
       font-family: sans-serif;
       text-align: center;
-      padding: 40px;
-      background: #f9f9f9;
+      padding: 20px;
     }
-    #photoButton {
-      background-color: #28a745;
-      color: white;
+    input[type="file"] {
+      display: none;
+    }
+    #sendPhotoButton {
       font-size: 24px;
       padding: 20px 40px;
+      background-color: #00c300;
+      color: white;
       border: none;
-      border-radius: 12px;
-      cursor: pointer;
+      border-radius: 10px;
     }
   </style>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body>
-  <h1>処方箋の写真を送る</h1>
-  <input type="file" accept="image/*" capture="environment" id="imageInput" style="display: none;" />
-  <button id="photoButton">処方箋を送る</button>
+  <h2>処方箋を送る</h2>
+  <button id="sendPhotoButton">処方箋を送る</button>
+  <input type="file" accept="image/*" capture="environment" id="photoInput" />
 
   <script>
-    const liffId = '2007826827-b9Epz7NP'; // 後ほど説明
+    async function initializeLiff() {
+      try {
+        await liff.init({ liffId: '2007826827-b9Epz7NP' }); // ←ここに自分のLIFF IDを入れてください
+        if (!liff.isLoggedIn()) {
+          liff.login();
+          return;
+        }
 
-    async function main() {
-      await liff.init({ liffId });
+        const sendPhotoButton = document.getElementById('sendPhotoButton');
+        const photoInput = document.getElementById('photoInput');
 
-      document.getElementById("photoButton").addEventListener("click", () => {
-        document.getElementById("imageInput").click();
-      });
+        sendPhotoButton.addEventListener('click', () => {
+          photoInput.click(); // カメラ起動
+        });
 
-      document.getElementById("imageInput").addEventListener("change", async function (event) {
-        const file = event.target.files[0];
-        if (!file) return;
+        photoInput.addEventListener('change', async (event) => {
+          const file = event.target.files[0];
+          if (!file) return;
 
-        const reader = new FileReader();
-        reader.onload = async function () {
-          const imageDataUrl = reader.result;
-          try {
-            await liff.shareTargetPicker([
-              {
-                type: "image",
-                originalContentUrl: imageDataUrl,
-                previewImageUrl: imageDataUrl
-              }
-            ]);
-            alert("写真を送信しました！");
-          } catch (e) {
-            alert("送信に失敗しました");
-            console.error(e);
-          }
-        };
-        reader.readAsDataURL(file);
-      });
+          const reader = new FileReader();
+          reader.onload = async function () {
+            try {
+              await liff.sendMessages([
+                {
+                  type: 'image',
+                  originalContentUrl: reader.result,
+                  previewImageUrl: reader.result
+                }
+              ]);
+              alert('送信しました！');
+              liff.closeWindow(); // 送信後に自動で画面を閉じます
+            } catch (e) {
+              console.error('送信エラー:', e);
+              alert('送信に失敗しました');
+            }
+          };
+          reader.readAsDataURL(file);
+        });
+
+      } catch (e) {
+        console.error('LIFF初期化エラー:', e);
+        alert('LIFF初期化に失敗しました');
+      }
     }
 
-    main();
+    initializeLiff();
   </script>
 </body>
 </html>
