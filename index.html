@@ -20,6 +20,7 @@
       color: white;
       border: none;
       border-radius: 10px;
+      margin-top: 40px;
     }
   </style>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -27,22 +28,20 @@
 <body>
   <h2>処方箋を送る</h2>
   <button id="sendPhotoButton">処方箋を送る</button>
-  <input type="file" accept="image/*" capture="environment" id="photoInput" />
-
+  <input type="file" accept="image/*" capture="environment" id="photoInput"/>
   <script>
     async function initializeLiff() {
       try {
-        await liff.init({ liffId: '2007826827-b9Epz7NP' }); // ←ここに自分のLIFF IDを入れてください
+        await liff.init({ liffId: '2007826827-b9Epz7NP' }); // ←あなたの LIFF ID
         if (!liff.isLoggedIn()) {
           liff.login();
           return;
         }
-
         const sendPhotoButton = document.getElementById('sendPhotoButton');
         const photoInput = document.getElementById('photoInput');
 
         sendPhotoButton.addEventListener('click', () => {
-          photoInput.click(); // カメラ起動
+          photoInput.click();
         });
 
         photoInput.addEventListener('change', async (event) => {
@@ -60,7 +59,7 @@
                 }
               ]);
               alert('送信しました！');
-              liff.closeWindow(); // 送信後に自動で画面を閉じます
+              liff.closeWindow();
             } catch (e) {
               console.error('送信エラー:', e);
               alert('送信に失敗しました');
@@ -68,7 +67,6 @@
           };
           reader.readAsDataURL(file);
         });
-
       } catch (e) {
         console.error('LIFF初期化エラー:', e);
         alert('LIFF初期化に失敗しました');
