@@ -10,12 +10,18 @@
       text-align: center;
       padding: 20px;
       background: #f5f5f5;
+      color: #222;
     }
-    h2 { margin-top: 0; }
+    h2 {
+      margin-top: 0;
+    }
+    .small {
+      font-size: 14px;
+    }
     input[type="file"] { display: none; }
     #sendPhotoButton {
       font-size: 24px;
-      padding: 18px 36px;
+      padding: 16px 32px;
       background-color: #00c300;
       color: white;
       border: none;
@@ -36,11 +42,14 @@
       display: none;
       margin-top: 20px;
       font-size: 18px;
-      color: #333;
       background: #ffffff;
-      padding: 12px;
-      border-radius: 8px;
-      box-shadow: 0 0 6px rgba(0,0,0,0.1);
+      padding: 14px;
+      border-radius: 10px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      text-align: left;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
     }
     .action-buttons {
       margin-top: 10px;
@@ -50,7 +59,7 @@
       justify-content: center;
     }
     button {
-      font-size: 18px;
+      font-size: 16px;
       padding: 12px 20px;
       border: none;
       border-radius: 8px;
@@ -74,18 +83,21 @@
       font-size: 16px;
       line-height: 1.4;
       text-align: left;
-      max-width: 500px;
+      max-width: 600px;
       margin-left: auto;
       margin-right: auto;
     }
-    #noteFallback {
-      margin-top: 8px;
+    .tip-box {
+      background: #eef9ff;
+      padding: 10px;
+      border-radius: 6px;
+      margin: 8px 0;
       font-size: 14px;
-      color: #555;
     }
-    .small {
-      font-size: 14px;
-      margin-top: 6px;
+    .highlight {
+      background: #fffde7;
+      padding: 4px 6px;
+      border-radius: 4px;
     }
   </style>
 </head>
@@ -101,26 +113,32 @@
   </div>
 
   <div id="instructions">
-    <p>この画像を薬局のLINEトークに送ってください。</p>
+    <p><strong>この画像を薬局のLINEトークに送ってください。</strong></p>
     <div class="action-buttons">
       <button id="saveButton">画像を開く（長押しで保存）</button>
       <button id="shareButton">この画像を共有（LINE等）</button>
     </div>
-    <div id="noteFallback">
-      ※共有ボタンが出ない／LINEが候補に出ない場合は、まず「画像を開く」で表示し、長押し保存。その後LINEのトーク画面で「＋」→「写真」から送信してください。
-    </div>
-    <div class="small">
-      うまくいかない場合は下の「外部ブラウザで開く」を使って、外部ブラウザ（例：Chrome）で再度操作してください。
+    <div class="tip-box">
+      <div>※うまく共有できないときや画像が保存に見えないときは：</div>
+      <ul style="padding-left:18px; margin:4px 0;">
+        <li>右上のメニュー（︙）を押して <span class="highlight">「外部ブラウザで開く」</span> を選ぶ</li>
+        <li>外部ブラウザ（例：Chrome）で開いた画像を長押しして保存、または共有ボタンからLINEを選ぶ</li>
+        <li>保存したらLINEトークに戻り、<span class="highlight">「＋」→「写真」</span> から送信</li>
+      </ul>
     </div>
     <button id="openExternalBtn">外部ブラウザで開く</button>
+    <div class="small">
+      ※外部ブラウザで開いたあと、画像を長押しで保存できます。共有可能ならLINEが候補に出ます。
+    </div>
   </div>
 
   <div id="afterGuide">
-    <p><strong>送信手順：</strong></p>
+    <p><strong>送信手順（推奨順）：</strong></p>
     <ol>
-      <li>「この画像を共有」ボタンでLINEを選び、薬局のトークを選んで送信</li>
+      <li>「この画像を共有」ボタンから <strong>LINE</strong> を選び、薬局のトークを開いて送信</li>
       <li>出ない場合は「画像を開く」で表示し、長押し保存</li>
       <li>LINEトークに戻り、「＋」→「写真」から保存した画像を送信</li>
+      <li>それでも難しいときは、右上のメニューから「外部ブラウザで開く」を選んで再度同じ操作を行う</li>
     </ol>
   </div>
 
@@ -140,7 +158,7 @@
       photoInput.click();
     });
 
-    photoInput.addEventListener('change', async (event) => {
+    photoInput.addEventListener('change', (event) => {
       const file = event.target.files[0];
       if (!file) return;
       const reader = new FileReader();
@@ -150,8 +168,7 @@
         previewDiv.style.display = 'block';
         instructions.style.display = 'block';
         afterGuide.style.display = 'none';
-
-        // 共有ボタン必ず表示
+        // 共有ボタンは必ず表示
         shareButton.style.display = 'inline-block';
       };
       reader.readAsDataURL(file);
@@ -204,13 +221,15 @@
         alert('先に写真を撮ってください。');
         return;
       }
-      // LINE内ブラウザだと _blank が内部で開くことがあるがまず試す
+      // 外部ブラウザに誘導（LINE内では完全に外部に出ない場合があるため、ユーザーに手動で選ぶ説明も併記）
+      // まずは新しいタブで自身のページを開いてみる
       const opened = window.open(window.location.href, '_blank');
       if (!opened) {
-        alert('右上のメニューから「外部ブラウザで開く」を選んでください。');
+        alert('右上のメニュー（︙）を押して「外部ブラウザで開く」を選んでください。');
+      } else {
+        alert('外部ブラウザ（タブ）で開きました。そこで再度共有または保存してください。');
       }
     });
   </script>
 </body>
 </html>
-
