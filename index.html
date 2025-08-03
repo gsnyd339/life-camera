@@ -20,60 +20,112 @@
       color: white;
       border: none;
       border-radius: 10px;
-      margin-top: 40px;
+      margin-top: 20px;
+    }
+    #preview {
+      margin-top: 20px;
+      display: none;
+    }
+    #preview img {
+      max-width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+    }
+    #instructions {
+      display: none;
+      margin-top: 20px;
+      font-size: 18px;
+      color: #333;
+    }
+    #saveButton {
+      font-size: 20px;
+      padding: 12px 24px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+    #afterGuide {
+      display: none;
+      margin-top: 15px;
+      padding: 10px;
+      background: #fff8e1;
+      border: 1px solid #ffd54f;
+      border-radius: 8px;
+      font-size: 16px;
+      line-height: 1.4;
     }
   </style>
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body>
   <h2>処方箋を送る</h2>
-  <button id="sendPhotoButton">処方箋を送る</button>
+  <button id="sendPhotoButton">処方箋を撮る</button>
   <input type="file" accept="image/*" capture="environment" id="photoInput"/>
+
+  <div id="preview">
+    <p>写真を確認してください：</p>
+    <img id="photoPreview" src="" alt="プレビュー画像">
+  </div>
+
+  <div id="instructions">
+    <p>この画像をLINEのトークに送ってください。</p>
+    <button id="saveButton">画像を保存</button>
+  </div>
+
+  <div id="afterGuide">
+    <p>次の手順で送信してください：</p>
+    <ol style="text-align:left; display:inline-block; padding-left:10px;">
+      <li>LINEのトーク画面に戻す</li>
+      <li>下の「＋」ボタンをタップ</li>
+      <li>「写真」から先ほど保存した処方箋の写真を選んで送る</li>
+    </ol>
+  </div>
+
   <script>
-    async function initializeLiff() {
-      try {
-        await liff.init({ liffId: '2007826827-b9Epz7NP' }); // ←あなたの LIFF ID
-        if (!liff.isLoggedIn()) {
-          liff.login();
-          return;
-        }
-        const sendPhotoButton = document.getElementById('sendPhotoButton');
-        const photoInput = document.getElementById('photoInput');
+    const sendPhotoButton = document.getElementById('sendPhotoButton');
+    const photoInput = document.getElementById('photoInput');
+    const previewDiv = document.getElementById('preview');
+    const photoPreview = document.getElementById('photoPreview');
+    const instructions = document.getElementById('instructions');
+    const saveButton = document.getElementById('saveButton');
+    const afterGuide = document.getElementById('afterGuide');
+    let imageDataUrl = '';
 
-        sendPhotoButton.addEventListener('click', () => {
-          photoInput.click();
-        });
+    sendPhotoButton.addEventListener('click', () => {
+      photoInput.click();
+    });
 
-        photoInput.addEventListener('change', async (event) => {
-          const file = event.target.files[0];
-          if (!file) return;
+    photoInput.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
 
-          const reader = new FileReader();
-          reader.onload = async function () {
-            try {
-              await liff.sendMessages([
-                {
-                  type: 'image',
-                  originalContentUrl: reader.result,
-                  previewImageUrl: reader.result
-                }
-              ]);
-              alert('送信しました！');
-              liff.closeWindow();
-            } catch (e) {
-              console.error('送信エラー:', e);
-              alert('送信に失敗しました');
-            }
-          };
-          reader.readAsDataURL(file);
-        });
-      } catch (e) {
-        console.error('LIFF初期化エラー:', e);
-        alert('LIFF初期化に失敗しました');
-      }
-    }
+      const reader = new FileReader();
+      reader.onload = function () {
+        imageDataUrl = reader.result;
+        photoPreview.src = imageDataUrl;
+        previewDiv.style.display = 'block';
+        instructions.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    });
 
-    initializeLiff();
+    saveButton.addEventListener('click', () => {
+      if (!imageDataUrl) return;
+
+      const a = document.createElement('a');
+      a.href = imageDataUrl;
+      a.download = 'prescription.jpg';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      // 案内を出す
+      afterGuide.style.display = 'block';
+      alert('画像が保存されました。LINEのトーク画面で「＋」→「写真」から送信してください。');
+    });
   </script>
 </body>
 </html>
+
