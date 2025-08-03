@@ -9,26 +9,31 @@
       font-family: sans-serif;
       text-align: center;
       padding: 20px;
+      background: #f5f5f5;
+    }
+    h2 {
+      margin-top: 0;
     }
     input[type="file"] {
       display: none;
     }
     #sendPhotoButton {
       font-size: 24px;
-      padding: 20px 40px;
+      padding: 18px 36px;
       background-color: #00c300;
       color: white;
       border: none;
       border-radius: 10px;
-      margin-top: 20px;
+      margin-top: 10px;
+      cursor: pointer;
     }
     #preview {
-      margin-top: 20px;
+      margin-top: 25px;
       display: none;
     }
     #preview img {
       max-width: 100%;
-      border: 1px solid #ccc;
+      border: 2px solid #ccc;
       border-radius: 10px;
     }
     #instructions {
@@ -36,6 +41,10 @@
       margin-top: 20px;
       font-size: 18px;
       color: #333;
+      background: #ffffff;
+      padding: 12px;
+      border-radius: 8px;
+      box-shadow: 0 0 6px rgba(0,0,0,0.1);
     }
     #saveButton {
       font-size: 20px;
@@ -50,36 +59,41 @@
     #afterGuide {
       display: none;
       margin-top: 15px;
-      padding: 10px;
-      background: #fff8e1;
+      padding: 12px;
+      background: #fff9e6;
       border: 1px solid #ffd54f;
       border-radius: 8px;
       font-size: 16px;
       line-height: 1.4;
+      text-align: left;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
     }
   </style>
 </head>
 <body>
-  <h2>処方箋を送る</h2>
+  <h2>処方箋の写真を送る</h2>
+  <p>下のボタンを押して処方箋を撮影してください。</p>
   <button id="sendPhotoButton">処方箋を撮る</button>
   <input type="file" accept="image/*" capture="environment" id="photoInput"/>
 
   <div id="preview">
-    <p>写真を確認してください：</p>
+    <p><strong>写真を確認してください：</strong></p>
     <img id="photoPreview" src="" alt="プレビュー画像">
   </div>
 
   <div id="instructions">
-    <p>この画像をLINEのトークに送ってください。</p>
-    <button id="saveButton">画像を保存</button>
+    <p>この画像を保存して、LINEのトークで送信してください。</p>
+    <button id="saveButton">画像を保存（長押しで保存）</button>
   </div>
 
   <div id="afterGuide">
-    <p>次の手順で送信してください：</p>
-    <ol style="text-align:left; display:inline-block; padding-left:10px;">
-      <li>LINEのトーク画面に戻す</li>
-      <li>下の「＋」ボタンをタップ</li>
-      <li>「写真」から先ほど保存した処方箋の写真を選んで送る</li>
+    <p><strong>送信手順：</strong></p>
+    <ol>
+      <li>写真が開いたら画像を<strong>長押し</strong>してください。</li>
+      <li>「画像を保存」または「写真に追加」などを選択して保存します。</li>
+      <li>LINEのトーク画面に戻り、下の「＋」ボタン→「写真」から保存した処方箋を選んで送信してください。</li>
     </ol>
   </div>
 
@@ -107,6 +121,7 @@
         photoPreview.src = imageDataUrl;
         previewDiv.style.display = 'block';
         instructions.style.display = 'block';
+        afterGuide.style.display = 'none'; // 再撮影なら手順を再表示前に隠す
       };
       reader.readAsDataURL(file);
     });
@@ -114,16 +129,17 @@
     saveButton.addEventListener('click', () => {
       if (!imageDataUrl) return;
 
-      const a = document.createElement('a');
-      a.href = imageDataUrl;
-      a.download = 'prescription.jpg';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      // 新しいタブで画像を開く（保存は長押しで誘導）
+      const newWindow = window.open(imageDataUrl, '_blank');
+      if (!newWindow) {
+        alert('ポップアップがブロックされました。画像が表示されない場合は、長押しで保存してください。');
+      }
 
-      // 案内を出す
+      // 手順を表示
       afterGuide.style.display = 'block';
-      alert('画像が保存されました。LINEのトーク画面で「＋」→「写真」から送信してください。');
+
+      // 追加の案内（任意）
+      alert('画像が表示されたら、長押しして「画像を保存」してください。その後、LINEトーク画面に戻って送信してください。');
     });
   </script>
 </body>
