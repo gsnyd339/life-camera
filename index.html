@@ -11,9 +11,7 @@
       padding: 20px;
       background: #f5f5f5;
     }
-    h2 {
-      margin-top: 0;
-    }
+    h2 { margin-top: 0; }
     input[type="file"] { display: none; }
     #sendPhotoButton {
       font-size: 24px;
@@ -51,24 +49,15 @@
       flex-wrap: wrap;
       justify-content: center;
     }
-    button.secondary {
+    button {
       font-size: 18px;
       padding: 12px 20px;
-      background-color: #ff9800;
-      color: white;
       border: none;
       border-radius: 8px;
       cursor: pointer;
     }
-    button.saveButton {
-      font-size: 18px;
-      padding: 12px 20px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
+    #saveButton { background-color: #007bff; color: white; }
+    #shareButton { background-color: #ff9800; color: white; display: none; }
     #afterGuide {
       display: none;
       margin-top: 15px;
@@ -82,11 +71,6 @@
       max-width: 500px;
       margin-left: auto;
       margin-right: auto;
-    }
-    #openExtern {
-      margin-top: 8px;
-      font-size: 14px;
-      color: #555;
     }
   </style>
 </head>
@@ -102,22 +86,19 @@
   </div>
 
   <div id="instructions">
-    <p>この画像をLINEのトークに送ってください。</p>
+    <p>この画像を送信してください。</p>
     <div class="action-buttons">
-      <button class="saveButton" id="saveButton">画像を開く（長押しで保存）</button>
-      <button class="secondary" id="shareButton" style="display:none;">この画像を共有（LINE等）</button>
-    </div>
-    <div id="openExtern">
-      うまく保存できない場合は、「外部ブラウザで開く」か、表示された画像を長押ししてください。
+      <button id="saveButton">画像を開く（長押しで保存）</button>
+      <button id="shareButton">この画像を共有（LINE等）</button>
     </div>
   </div>
 
   <div id="afterGuide">
     <p><strong>送信手順：</strong></p>
     <ol>
-      <li>「この画像を共有」または「画像を開く」ボタンを使う（LINEが候補に出る場合は選ぶ）</li>
-      <li>出ない場合は、画像を長押しして保存</li>
-      <li>LINEのトーク画面に戻り、「＋」→「写真」から保存した処方箋を選んで送信してください。</li>
+      <li>「この画像を共有」を押してLINEを選ぶ</li>
+      <li>出ない場合は「画像を開く」で表示し、長押しして保存</li>
+      <li>LINEのトーク画面に戻り、「＋」→「写真」から保存した処方箋を選んで送信</li>
     </ol>
   </div>
 
@@ -136,10 +117,9 @@
       photoInput.click();
     });
 
-    photoInput.addEventListener('change', async (event) => {
+    photoInput.addEventListener('change', (event) => {
       const file = event.target.files[0];
       if (!file) return;
-
       const reader = new FileReader();
       reader.onload = function () {
         imageDataUrl = reader.result;
@@ -148,11 +128,8 @@
         instructions.style.display = 'block';
         afterGuide.style.display = 'none';
 
-        // 共有ボタンの表示可否（Web Share API 対応時）
         if (navigator.canShare || navigator.share) {
           shareButton.style.display = 'inline-block';
-        } else {
-          shareButton.style.display = 'none';
         }
       };
       reader.readAsDataURL(file);
@@ -160,30 +137,20 @@
 
     saveButton.addEventListener('click', () => {
       if (!imageDataUrl) return;
-
-      // まず共有案内を出す（後で手順も）
-      afterGuide.style.display = 'block';
-
-      // try open new tab
       let opened = false;
       try {
         const win = window.open(imageDataUrl, '_blank');
         if (win) opened = true;
-      } catch (e) {
-        opened = false;
-      }
+      } catch (e) { opened = false; }
       if (!opened) {
-        // フォールバック：同タブ表示
         window.location.href = imageDataUrl;
       }
-
-      alert('画像が表示されましたら長押しして保存、または「この画像を共有」ボタンでLINEを選んで送ってください。');
+      afterGuide.style.display = 'block';
+      alert('画像が表示されたら長押しして保存してください。');
     });
 
     shareButton.addEventListener('click', async () => {
       if (!imageDataUrl) return;
-
-      // Web Share API（AndroidなどでLINEなど共有シート出る）
       try {
         const res = await fetch(imageDataUrl);
         const blob = await res.blob();
@@ -195,23 +162,14 @@
             title: '処方箋の写真',
             text: '処方箋の写真を送ります。'
           });
-        } else if (navigator.share) {
-          await navigator.share({
-            title: '処方箋の写真',
-            text: '処方箋の写真を送ります。画像を添付してください。'
-          });
         } else {
           throw new Error('共有非対応');
         }
-
-        // 共有後の案内
-        afterGuide.style.display = 'block';
       } catch (err) {
-        alert('共有に失敗しました。画像が表示されたら長押しで保存してください。');
+        alert('共有に失敗しました。画像を開いて長押し保存してください。');
       }
     });
   </script>
 </body>
 </html>
-
 
