@@ -58,6 +58,12 @@
     }
     #saveButton { background-color: #007bff; color: white; }
     #shareButton { background-color: #ff9800; color: white; display: none; }
+    #openExternalBtn {
+      background: #444;
+      color: #fff;
+      margin-top: 12px;
+      font-size: 16px;
+    }
     #afterGuide {
       display: none;
       margin-top: 15px;
@@ -71,6 +77,15 @@
       max-width: 500px;
       margin-left: auto;
       margin-right: auto;
+    }
+    #noteFallback {
+      margin-top: 8px;
+      font-size: 14px;
+      color: #555;
+    }
+    .small {
+      font-size: 14px;
+      margin-top: 6px;
     }
   </style>
 </head>
@@ -86,19 +101,26 @@
   </div>
 
   <div id="instructions">
-    <p>この画像を送信してください。</p>
+    <p>この画像を薬局のLINEトークに送ってください。</p>
     <div class="action-buttons">
       <button id="saveButton">画像を開く（長押しで保存）</button>
       <button id="shareButton">この画像を共有（LINE等）</button>
     </div>
+    <div id="noteFallback">
+      ※共有ボタンが出ない／LINEが候補に出ない場合は、まず「画像を開く」で表示し、長押し保存。その後LINEのトーク画面で「＋」→「写真」から送信してください。
+    </div>
+    <div class="small">
+      うまくいかない場合は下の「外部ブラウザで開く」を使って、外部ブラウザ（例：Chrome）で再度操作してください。
+    </div>
+    <button id="openExternalBtn">外部ブラウザで開く</button>
   </div>
 
   <div id="afterGuide">
     <p><strong>送信手順：</strong></p>
     <ol>
-      <li>「この画像を共有」を押してLINEを選ぶ</li>
-      <li>出ない場合は「画像を開く」で表示し、長押しして保存</li>
-      <li>LINEのトーク画面に戻り、「＋」→「写真」から保存した処方箋を選んで送信</li>
+      <li>「この画像を共有」ボタンでLINEを選び、薬局のトークを選んで送信</li>
+      <li>出ない場合は「画像を開く」で表示し、長押し保存</li>
+      <li>LINEトークに戻り、「＋」→「写真」から保存した画像を送信</li>
     </ol>
   </div>
 
@@ -110,6 +132,7 @@
     const instructions = document.getElementById('instructions');
     const saveButton = document.getElementById('saveButton');
     const shareButton = document.getElementById('shareButton');
+    const openExternalBtn = document.getElementById('openExternalBtn');
     const afterGuide = document.getElementById('afterGuide');
     let imageDataUrl = '';
 
@@ -117,7 +140,7 @@
       photoInput.click();
     });
 
-    photoInput.addEventListener('change', (event) => {
+    photoInput.addEventListener('change', async (event) => {
       const file = event.target.files[0];
       if (!file) return;
       const reader = new FileReader();
@@ -128,9 +151,8 @@
         instructions.style.display = 'block';
         afterGuide.style.display = 'none';
 
-        if (navigator.canShare || navigator.share) {
-          shareButton.style.display = 'inline-block';
-        }
+        // 共有ボタン必ず表示
+        shareButton.style.display = 'inline-block';
       };
       reader.readAsDataURL(file);
     });
@@ -141,7 +163,9 @@
       try {
         const win = window.open(imageDataUrl, '_blank');
         if (win) opened = true;
-      } catch (e) { opened = false; }
+      } catch (e) {
+        opened = false;
+      }
       if (!opened) {
         window.location.href = imageDataUrl;
       }
@@ -155,18 +179,35 @@
         const res = await fetch(imageDataUrl);
         const blob = await res.blob();
         const file = new File([blob], 'prescription.jpg', { type: blob.type });
-
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
           await navigator.share({
             files: [file],
             title: '処方箋の写真',
             text: '処方箋の写真を送ります。'
           });
+        } else if (navigator.share) {
+          await navigator.share({
+            title: '処方箋の写真',
+            text: '処方箋の写真を送ります。'
+          });
         } else {
           throw new Error('共有非対応');
         }
+        afterGuide.style.display = 'block';
       } catch (err) {
         alert('共有に失敗しました。画像を開いて長押し保存してください。');
+      }
+    });
+
+    openExternalBtn.addEventListener('click', () => {
+      if (!imageDataUrl) {
+        alert('先に写真を撮ってください。');
+        return;
+      }
+      // LINE内ブラウザだと _blank が内部で開くことがあるがまず試す
+      const opened = window.open(window.location.href, '_blank');
+      if (!opened) {
+        alert('右上のメニューから「外部ブラウザで開く」を選んでください。');
       }
     });
   </script>
