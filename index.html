@@ -128,12 +128,12 @@
         instructions.style.display = 'block';
         afterGuide.style.display = 'none';
 
-       
-    shareButton.style.display = 'inline-block';
-  };
-  reader.readAsDataURL(file);
-});
-
+        if (navigator.canShare || navigator.share) {
+          shareButton.style.display = 'inline-block';
+        }
+      };
+      reader.readAsDataURL(file);
+    });
 
     saveButton.addEventListener('click', () => {
       if (!imageDataUrl) return;
@@ -172,5 +172,4 @@
   </script>
 </body>
 </html>
-
 
