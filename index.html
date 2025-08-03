@@ -3,143 +3,215 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>処方箋を送る</title>
+  <title>処方箋を送る（外部ブラウザ誘導付き）</title>
   <style>
     body {
-      font-family: sans-serif;
-      text-align: center;
-      padding: 20px;
-      background: #f5f5f5;
+      font-family: system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+      background: #f0f8ff;
+      padding: 16px;
       color: #222;
+      line-height: 1.4;
     }
-    h2 {
-      margin-top: 0;
+    h1, h2 {
+      margin: 6px 0 12px;
     }
-    .small {
-      font-size: 14px;
+    .step {
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
-    input[type="file"] { display: none; }
+    .highlight {
+      background: #fff9c4;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .big {
+      font-size: 1.15em;
+    }
     #sendPhotoButton {
-      font-size: 24px;
-      padding: 16px 32px;
-      background-color: #00c300;
-      color: white;
+      display: block;
+      width: 100%;
+      max-width: 360px;
+      margin: 0 auto 12px;
+      font-size: 22px;
+      padding: 16px;
+      background: #00c300;
+      color: #fff;
       border: none;
       border-radius: 10px;
-      margin-top: 10px;
       cursor: pointer;
     }
     #preview {
-      margin-top: 25px;
+      margin-top: 12px;
       display: none;
+      text-align: center;
     }
     #preview img {
       max-width: 100%;
+      border-radius: 10px;
       border: 2px solid #ccc;
-      border-radius: 10px;
     }
-    #instructions {
-      display: none;
-      margin-top: 20px;
-      font-size: 18px;
-      background: #ffffff;
-      padding: 14px;
-      border-radius: 10px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
-      text-align: left;
-      max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    .action-buttons {
-      margin-top: 10px;
+    .buttons {
+      margin-top: 12px;
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
       justify-content: center;
     }
-    button {
+    button.small {
       font-size: 16px;
-      padding: 12px 20px;
-      border: none;
+      padding: 10px 16px;
       border-radius: 8px;
+      border: none;
       cursor: pointer;
     }
-    #saveButton { background-color: #007bff; color: white; }
-    #shareButton { background-color: #ff9800; color: white; display: none; }
-    #openExternalBtn {
+    #saveButton { background: #1976d2; color: white; }
+    #shareButton { background: #fb8c00; color: white; display: none; }
+    #openExternalLongPress {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 14px 18px;
       background: #444;
-      color: #fff;
-      margin-top: 12px;
-      font-size: 16px;
-    }
-    #afterGuide {
-      display: none;
-      margin-top: 15px;
-      padding: 12px;
-      background: #fff9e6;
-      border: 1px solid #ffd54f;
+      color: white;
       border-radius: 8px;
+      text-decoration: none;
       font-size: 16px;
-      line-height: 1.4;
-      text-align: left;
-      max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
+      font-weight: bold;
     }
-    .tip-box {
-      background: #eef9ff;
+    #menuIllustration {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 8px;
+      margin-bottom: 8px;
+    }
+    .menu-box {
+      position: relative;
+      width: 100px;
+      border: 1px solid #bbb;
+      border-radius: 8px;
+      padding: 8px;
+      background: #fff;
+      font-size: 12px;
+      text-align: center;
+    }
+    .dot-icon {
+      width: 24px;
+      height: 24px;
+      display: inline-block;
+      position: relative;
+    }
+    .dot-icon span {
+      display: block;
+      width: 6px;
+      height: 6px;
+      background: #333;
+      border-radius: 50%;
+      position: absolute;
+    }
+    .dot-top { top: 2px; left: 9px; }
+    .dot-middle { top: 9px; left: 9px; }
+    .dot-bottom { top: 16px; left: 9px; }
+    #instructions {
+      display: none;
+      margin-top: 12px;
+    }
+    ol {
+      padding-left: 18px;
+    }
+    .note {
+      background: #fff3e0;
       padding: 10px;
       border-radius: 6px;
-      margin: 8px 0;
-      font-size: 14px;
+      margin-top: 8px;
     }
-    .highlight {
-      background: #fffde7;
-      padding: 4px 6px;
-      border-radius: 4px;
+    .footer {
+      font-size: 12px;
+      margin-top: 20px;
+      color: #555;
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <h2>処方箋の写真を送る</h2>
-  <p>下のボタンを押して処方箋を撮影してください。</p>
-  <button id="sendPhotoButton">処方箋を撮る</button>
-  <input type="file" accept="image/*" capture="environment" id="photoInput"/>
+  <h1>処方箋の写真を送る</h1>
 
-  <div id="preview">
-    <p><strong>写真を確認してください：</strong></p>
-    <img id="photoPreview" src="" alt="プレビュー画像">
-  </div>
-
-  <div id="instructions">
-    <p><strong>この画像を薬局のLINEトークに送ってください。</strong></p>
-    <div class="action-buttons">
-      <button id="saveButton">画像を開く（長押しで保存）</button>
-      <button id="shareButton">この画像を共有（LINE等）</button>
-    </div>
-    <div class="tip-box">
-      <div>※うまく共有できないときや画像が保存に見えないときは：</div>
-      <ul style="padding-left:18px; margin:4px 0;">
-        <li>右上のメニュー（︙）を押して <span class="highlight">「外部ブラウザで開く」</span> を選ぶ</li>
-        <li>外部ブラウザ（例：Chrome）で開いた画像を長押しして保存、または共有ボタンからLINEを選ぶ</li>
-        <li>保存したらLINEトークに戻り、<span class="highlight">「＋」→「写真」</span> から送信</li>
-      </ul>
-    </div>
-    <button id="openExternalBtn">外部ブラウザで開く</button>
-    <div class="small">
-      ※外部ブラウザで開いたあと、画像を長押しで保存できます。共有可能ならLINEが候補に出ます。
+  <div class="step">
+    <div class="big"><strong>1. 処方箋を撮影</strong></div>
+    <p>下のボタンを押してカメラを起動し、処方箋を撮ってください。</p>
+    <button id="sendPhotoButton">処方箋を撮る</button>
+    <input type="file" accept="image/*" capture="environment" id="photoInput" style="display:none;">
+    <div id="preview">
+      <p><strong>撮れた写真を確認：</strong></p>
+      <img id="photoPreview" src="" alt="プレビュー">
     </div>
   </div>
 
-  <div id="afterGuide">
-    <p><strong>送信手順（推奨順）：</strong></p>
+  <div class="step" id="step2">
+    <div class="big"><strong>2. 送る準備</strong></div>
+    <p>撮影後、次のどちらかで薬局に送ります：</p>
+    <div class="buttons">
+      <button class="small" id="shareButton">この画像を共有（LINE等）</button>
+      <button class="small" id="saveButton">画像を開く（長押し保存）</button>
+    </div>
+    <div class="note">
+      <div><strong>共有が出ない・保存が反応しないとき：</strong></div>
+      <div style="margin-top:6px;">
+        ① 右上または右下の「︙」<br>
+        ② <span class="highlight">「外部ブラウザで開く」</span> を選ぶ<br>
+        ③ 外部ブラウザで再表示されたら長押し保存、または共有（LINEを選ぶ）<br>
+        ④ LINEトークに戻り「＋」→「写真」から送信
+      </div>
+    </div>
+    <div style="margin-top:10px;">
+      <div><strong>三点メニューの場所の例：</strong></div>
+      <div id="menuIllustration">
+        <div class="menu-box">
+          <div><strong>右下の場合</strong></div>
+          <div style="margin:6px 0;">
+            <div class="dot-icon">
+              <span class="dot-top"></span>
+              <span class="dot-middle"></span>
+              <span class="dot-bottom"></span>
+            </div>
+          </div>
+          <div style="font-size:11px;">ここを押す</div>
+        </div>
+        <div class="menu-box">
+          <div><strong>右上の場合</strong></div>
+          <div style="margin:6px 0;">
+            <div class="dot-icon">
+              <span class="dot-top"></span>
+              <span class="dot-middle"></span>
+              <span class="dot-bottom"></span>
+            </div>
+          </div>
+          <div style="font-size:11px;">ここを押す</div>
+        </div>
+      </div>
+      <div class="small">※端末によって位置が違うので、「右上または右下」のメニューを探してください。</div>
+    </div>
+    <div style="margin-top:12px;">
+      <a id="openExternalLongPress" href="#" draggable="false">外部ブラウザで開く（長押しして新しいタブを選ぶ）</a>
+    </div>
+  </div>
+
+  <div class="step" id="step3">
+    <div class="big"><strong>3. 薬局に送信</strong></div>
+    <p>保存した画像を以下のように送ってください：</p>
     <ol>
-      <li>「この画像を共有」ボタンから <strong>LINE</strong> を選び、薬局のトークを開いて送信</li>
-      <li>出ない場合は「画像を開く」で表示し、長押し保存</li>
-      <li>LINEトークに戻り、「＋」→「写真」から保存した画像を送信</li>
-      <li>それでも難しいときは、右上のメニューから「外部ブラウザで開く」を選んで再度同じ操作を行う</li>
+      <li>LINEのトーク画面に戻る</li>
+      <li>下の「＋」ボタンを押す</li>
+      <li>「写真」を選び、先ほど保存した処方箋の写真を選択</li>
+      <li>送信</li>
     </ol>
+  </div>
+
+  <div class="footer">
+    このページを開いたら、うまくいかないときは最初に「外部ブラウザで開く」を試してください。
   </div>
 
   <script>
@@ -147,47 +219,27 @@
     const photoInput = document.getElementById('photoInput');
     const previewDiv = document.getElementById('preview');
     const photoPreview = document.getElementById('photoPreview');
-    const instructions = document.getElementById('instructions');
-    const saveButton = document.getElementById('saveButton');
     const shareButton = document.getElementById('shareButton');
-    const openExternalBtn = document.getElementById('openExternalBtn');
-    const afterGuide = document.getElementById('afterGuide');
+    const saveButton = document.getElementById('saveButton');
+    const openExternalLongPress = document.getElementById('openExternalLongPress');
+
     let imageDataUrl = '';
 
     sendPhotoButton.addEventListener('click', () => {
       photoInput.click();
     });
 
-    photoInput.addEventListener('change', (event) => {
-      const file = event.target.files[0];
+    photoInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
       if (!file) return;
       const reader = new FileReader();
       reader.onload = function () {
         imageDataUrl = reader.result;
         photoPreview.src = imageDataUrl;
         previewDiv.style.display = 'block';
-        instructions.style.display = 'block';
-        afterGuide.style.display = 'none';
-        // 共有ボタンは必ず表示
         shareButton.style.display = 'inline-block';
       };
       reader.readAsDataURL(file);
-    });
-
-    saveButton.addEventListener('click', () => {
-      if (!imageDataUrl) return;
-      let opened = false;
-      try {
-        const win = window.open(imageDataUrl, '_blank');
-        if (win) opened = true;
-      } catch (e) {
-        opened = false;
-      }
-      if (!opened) {
-        window.location.href = imageDataUrl;
-      }
-      afterGuide.style.display = 'block';
-      alert('画像が表示されたら長押しして保存してください。');
     });
 
     shareButton.addEventListener('click', async () => {
@@ -210,24 +262,37 @@
         } else {
           throw new Error('共有非対応');
         }
-        afterGuide.style.display = 'block';
       } catch (err) {
-        alert('共有に失敗しました。画像を開いて長押し保存してください。');
+        alert('共有に失敗しました。右上または右下のメニューから「外部ブラウザで開く」を選んで再試行してください。');
       }
     });
 
-    openExternalBtn.addEventListener('click', () => {
+    saveButton.addEventListener('click', () => {
+      if (!imageDataUrl) return;
+      let opened = false;
+      try {
+        const win = window.open(imageDataUrl, '_blank');
+        if (win) opened = true;
+      } catch (e) {
+        opened = false;
+      }
+      if (!opened) {
+        window.location.href = imageDataUrl;
+      }
+      alert('表示された画像を長押しして保存してください。');
+    });
+
+    // 長押しで新しいタブを開く誘導リンク：実際は長押しで「新しいタブで開く」などを選ぶ
+    openExternalLongPress.addEventListener('click', (e) => {
+      e.preventDefault();
       if (!imageDataUrl) {
-        alert('先に写真を撮ってください。');
+        alert('まず処方箋を撮ってください。');
         return;
       }
-      // 外部ブラウザに誘導（LINE内では完全に外部に出ない場合があるため、ユーザーに手動で選ぶ説明も併記）
-      // まずは新しいタブで自身のページを開いてみる
-      const opened = window.open(window.location.href, '_blank');
-      if (!opened) {
-        alert('右上のメニュー（︙）を押して「外部ブラウザで開く」を選んでください。');
-      } else {
-        alert('外部ブラウザ（タブ）で開きました。そこで再度共有または保存してください。');
+      // 自ページを開く（ユーザーが「新しいタブで開く」などを選ぶ想定）
+      const w = window.open(window.location.href, '_blank');
+      if (!w) {
+        alert('右上または右下のメニュー（︙）を押して「外部ブラウザで開く」を選んでください。');
       }
     });
   </script>
