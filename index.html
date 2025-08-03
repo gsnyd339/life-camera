@@ -14,9 +14,7 @@
     h2 {
       margin-top: 0;
     }
-    input[type="file"] {
-      display: none;
-    }
+    input[type="file"] { display: none; }
     #sendPhotoButton {
       font-size: 24px;
       padding: 18px 36px;
@@ -46,14 +44,29 @@
       border-radius: 8px;
       box-shadow: 0 0 6px rgba(0,0,0,0.1);
     }
-    #saveButton {
-      font-size: 20px;
-      padding: 12px 24px;
+    .action-buttons {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    button.secondary {
+      font-size: 18px;
+      padding: 12px 20px;
+      background-color: #ff9800;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button.saveButton {
+      font-size: 18px;
+      padding: 12px 20px;
       background-color: #007bff;
       color: white;
       border: none;
       border-radius: 8px;
-      margin-top: 10px;
       cursor: pointer;
     }
     #afterGuide {
@@ -70,6 +83,11 @@
       margin-left: auto;
       margin-right: auto;
     }
+    #openExtern {
+      margin-top: 8px;
+      font-size: 14px;
+      color: #555;
+    }
   </style>
 </head>
 <body>
@@ -84,16 +102,22 @@
   </div>
 
   <div id="instructions">
-    <p>この画像を保存して、LINEのトークで送信してください。</p>
-    <button id="saveButton">画像を保存（長押しで保存）</button>
+    <p>この画像をLINEのトークに送ってください。</p>
+    <div class="action-buttons">
+      <button class="saveButton" id="saveButton">画像を開く（長押しで保存）</button>
+      <button class="secondary" id="shareButton" style="display:none;">この画像を共有（LINE等）</button>
+    </div>
+    <div id="openExtern">
+      うまく保存できない場合は、「外部ブラウザで開く」か、表示された画像を長押ししてください。
+    </div>
   </div>
 
   <div id="afterGuide">
     <p><strong>送信手順：</strong></p>
     <ol>
-      <li>写真が開いたら画像を<strong>長押し</strong>してください。</li>
-      <li>「画像を保存」または「写真に追加」などを選択して保存します。</li>
-      <li>LINEのトーク画面に戻り、下の「＋」ボタン→「写真」から保存した処方箋を選んで送信してください。</li>
+      <li>「この画像を共有」または「画像を開く」ボタンを使う（LINEが候補に出る場合は選ぶ）</li>
+      <li>出ない場合は、画像を長押しして保存</li>
+      <li>LINEのトーク画面に戻り、「＋」→「写真」から保存した処方箋を選んで送信してください。</li>
     </ol>
   </div>
 
@@ -104,6 +128,7 @@
     const photoPreview = document.getElementById('photoPreview');
     const instructions = document.getElementById('instructions');
     const saveButton = document.getElementById('saveButton');
+    const shareButton = document.getElementById('shareButton');
     const afterGuide = document.getElementById('afterGuide');
     let imageDataUrl = '';
 
@@ -111,7 +136,7 @@
       photoInput.click();
     });
 
-    photoInput.addEventListener('change', (event) => {
+    photoInput.addEventListener('change', async (event) => {
       const file = event.target.files[0];
       if (!file) return;
 
@@ -121,7 +146,14 @@
         photoPreview.src = imageDataUrl;
         previewDiv.style.display = 'block';
         instructions.style.display = 'block';
-        afterGuide.style.display = 'none'; // 再撮影なら手順を再表示前に隠す
+        afterGuide.style.display = 'none';
+
+        // 共有ボタンの表示可否（Web Share API 対応時）
+        if (navigator.canShare || navigator.share) {
+          shareButton.style.display = 'inline-block';
+        } else {
+          shareButton.style.display = 'none';
+        }
       };
       reader.readAsDataURL(file);
     });
@@ -129,18 +161,57 @@
     saveButton.addEventListener('click', () => {
       if (!imageDataUrl) return;
 
-      // 新しいタブで画像を開く（保存は長押しで誘導）
-      const newWindow = window.open(imageDataUrl, '_blank');
-      if (!newWindow) {
-        alert('ポップアップがブロックされました。画像が表示されない場合は、長押しで保存してください。');
-      }
-
-      // 手順を表示
+      // まず共有案内を出す（後で手順も）
       afterGuide.style.display = 'block';
 
-      // 追加の案内（任意）
-      alert('画像が表示されたら、長押しして「画像を保存」してください。その後、LINEトーク画面に戻って送信してください。');
+      // try open new tab
+      let opened = false;
+      try {
+        const win = window.open(imageDataUrl, '_blank');
+        if (win) opened = true;
+      } catch (e) {
+        opened = false;
+      }
+      if (!opened) {
+        // フォールバック：同タブ表示
+        window.location.href = imageDataUrl;
+      }
+
+      alert('画像が表示されましたら長押しして保存、または「この画像を共有」ボタンでLINEを選んで送ってください。');
+    });
+
+    shareButton.addEventListener('click', async () => {
+      if (!imageDataUrl) return;
+
+      // Web Share API（AndroidなどでLINEなど共有シート出る）
+      try {
+        const res = await fetch(imageDataUrl);
+        const blob = await res.blob();
+        const file = new File([blob], 'prescription.jpg', { type: blob.type });
+
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: '処方箋の写真',
+            text: '処方箋の写真を送ります。'
+          });
+        } else if (navigator.share) {
+          await navigator.share({
+            title: '処方箋の写真',
+            text: '処方箋の写真を送ります。画像を添付してください。'
+          });
+        } else {
+          throw new Error('共有非対応');
+        }
+
+        // 共有後の案内
+        afterGuide.style.display = 'block';
+      } catch (err) {
+        alert('共有に失敗しました。画像が表示されたら長押しで保存してください。');
+      }
     });
   </script>
 </body>
 </html>
+
+
