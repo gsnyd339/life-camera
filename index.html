@@ -52,7 +52,7 @@
       margin: 4px 0 8px;
     }
     .desc {
-      font-size: 1.3rem;
+      font-size: 1.35rem;
       margin: 6px 0 12px;
       line-height: 1.35;
     }
@@ -87,16 +87,26 @@
       background: #ff9800;
       color: white;
     }
-    .qr-large {
-      width: 180px;
-      height: 180px;
-      display: block;
-      margin: 12px auto;
-    }
     .footer {
       margin-top: 20px;
       font-size: 12px;
       text-align: center;
+    }
+    .help-box {
+      background: #fff3cd;
+      border: 1px solid #ffeeba;
+      padding: 16px;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 1.1rem;
+      margin-top: 24px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      line-height: 1.4;
+    }
+    .help-box strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 1.2rem;
     }
   </style>
 </head>
@@ -125,25 +135,17 @@
     </div>
   </div>
 
-  <!-- Step 3: QR -->
-  <div class="stepbox">
-    <p class="title"><strong>かんたんアクセス用QRコード</strong></p>
-    <p class="desc">以下のコードをスマホのカメラで読み取ってください（このページが開きます）：</p>
-    <img class="qr-large" id="qr" alt="QRコード">
-    <p class="small">このQRを印刷して受付や説明カードに貼ると便利です。</p>
-  </div>
-
-  <div class="footer">
-    ご不明なときはスタッフに一緒に設定をおねがいください。<br>
+  <!-- ヘルプ／補助表示 -->
+  <div class="help-box">
+    <strong>ご不明なときはスタッフが設定をお手伝いします。</strong>
     次回からはホーム画面のアイコンをタップするだけです。
   </div>
 
-  <script>
-    // QRコード生成
-    const currentUrl = location.href;
-    const qrImg = document.getElementById('qr');
-    qrImg.src = 'https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=' + encodeURIComponent(currentUrl) + '&chld=L|1';
+  <div class="footer">
+    ※操作に迷った場合は遠慮なくスタッフにお声がけください。
+  </div>
 
+  <script>
     // カメラ起動
     const takePhoto = document.getElementById('takePhoto');
     const fileInput = document.getElementById('fileInput');
@@ -203,4 +205,3 @@
 
 </body>
 </html>
-
