@@ -11,7 +11,7 @@
 
   <style>
     body {
-      font-family: system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
       background: #f7f9fc;
       padding: 16px;
       color: #222;
@@ -20,7 +20,6 @@
       line-height: 1.5;
     }
     h1 { font-size: 1.6rem; margin-bottom:4px; }
-    h2 { margin-top: 24px; }
     .big-btn {
       display: block;
       width: 100%;
@@ -33,13 +32,6 @@
       border: none;
       border-radius: 10px;
       cursor: pointer;
-    }
-    .notice {
-      background: #fff3cd;
-      border: 1px solid #ffeeba;
-      padding: 12px;
-      border-radius: 8px;
-      margin: 12px 0;
     }
     #preview {
       margin-top: 12px;
@@ -66,7 +58,6 @@
       cursor: pointer;
     }
     #shareBtn { background: #ff9800; color: white; }
-    #openBtn { background: #444; color: white; }
     .stepbox {
       background: white;
       padding: 12px 14px;
@@ -74,38 +65,22 @@
       border-radius: 8px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.08);
     }
-    .small {
-      font-size: 0.9rem;
-    }
+    .small { font-size: 0.9rem; }
     .qr-large {
       width: 180px;
       height: 180px;
       display: block;
       margin: 12px auto;
     }
-    .hint {
-      background: #e3f2fd;
-      padding: 10px;
-      border-radius: 6px;
-      margin-top: 8px;
-      font-size: 14px;
-    }
   </style>
 </head>
 <body>
+
   <h1>処方箋の写真を送る</h1>
 
+  <!-- Step 1 -->
   <div class="stepbox">
-    <p class="big"><strong>1. このページをホーム画面に追加（初回だけ）</strong></p>
-    <p>次からはアイコンをタップするだけで開けます。下の手順を参考にしてください。</p>
-    <div class="hint">
-      <div><strong>Android（Chromeなど）:</strong> 画面上部または右上のメニュー（︙）を開き、「ホーム画面に追加」を選ぶ</div>
-      <div><strong>iPhone（Safari）:</strong> 下の共有ボタン（□に↑）を押して、「ホーム画面に追加」を選ぶ</div>
-    </div>
-  </div>
-
-  <div class="stepbox">
-    <p class="big"><strong>2. 処方箋を撮影</strong></p>
+    <p><strong>1. 処方箋を撮影</strong></p>
     <p>下のボタンを押してカメラを起動し、処方箋の写真を撮ってください。</p>
     <button id="takePhoto" class="big-btn">処方箋を撮る</button>
     <input type="file" accept="image/*" capture="environment" id="fileInput" style="display:none;">
@@ -115,38 +90,30 @@
     </div>
   </div>
 
+  <!-- Step 2 -->
   <div class="stepbox">
-    <p class="big"><strong>3. 写真を共有または保存</strong></p>
+    <p><strong>2. 写真を送る</strong></p>
+    <p>下のボタンを押して「LINE」を選択、送り先を選んで右上の「転送」を押してください。</p>
     <div class="actions">
-      <button id="shareBtn" class="small">LINEで共有</button>
-      <button id="openBtn" class="small">画像を開く（長押し保存）</button>
+      <button id="shareBtn" class="small">LINEで送る</button>
     </div>
-    <p class="small">※共有が出ない場合は、画像を開いて長押し保存し、LINEトークの「＋」→「写真」から送ってください。</p>
   </div>
 
+  <!-- Step 3: QR -->
   <div class="stepbox">
-    <p class="big"><strong>4. 薬局のLINEへ送信</strong></p>
-    <ol>
-      <li>LINEアプリを開く</li>
-      <li>薬局のトークを開き、「＋」→「写真」を選択</li>
-      <li>保存した処方箋画像を選んで送信</li>
-    </ol>
-  </div>
-
-  <div class="stepbox">
-    <p class="big"><strong>かんたんアクセス用QRコード</strong></p>
+    <p><strong>かんたんアクセス用QRコード</strong></p>
     <p>以下のコードをスマホのカメラで読み取ってください（このページが開きます）：</p>
     <img class="qr-large" id="qr" alt="QRコード">
     <p class="small">このQRを印刷して受付や説明カードに貼ると便利です。</p>
   </div>
 
-  <div class="footer small">
+  <div class="small" style="text-align:center; margin-top:20px;">
     ご不明なときはスタッフに一緒に設定をおねがいください。<br>
     次回からはホーム画面のアイコンをタップするだけです。
   </div>
 
   <script>
-    // QRコード生成（Google Chart API）
+    // QRコード生成
     const currentUrl = location.href;
     const qrImg = document.getElementById('qr');
     qrImg.src = 'https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=' + encodeURIComponent(currentUrl) + '&chld=L|1';
@@ -174,7 +141,7 @@
       reader.readAsDataURL(file);
     });
 
-    // 共有（LINE含む）
+    // 共有
     const shareBtn = document.getElementById('shareBtn');
     shareBtn.addEventListener('click', async () => {
       if (!dataUrl) {
@@ -192,26 +159,10 @@
             text: '処方箋の写真を送ります。'
           });
         } else {
-          // フォールバック：開いて長押し保存
           alert('共有が使えない環境です。画像を開いて長押し保存し、LINEで送ってください。');
         }
       } catch (err) {
         alert('共有に失敗しました。画像を開いて保存してください。');
-      }
-    });
-
-    // 画像を開いて長押し誘導
-    const openBtn = document.getElementById('openBtn');
-    openBtn.addEventListener('click', () => {
-      if (!dataUrl) {
-        alert('まず処方箋を撮影してください。');
-        return;
-      }
-      // 新しいタブで開く（保存は長押し）
-      const w = window.open(dataUrl, '_blank');
-      if (!w) {
-        alert('画像を表示します。長押しで保存してください。');
-        location.href = dataUrl;
       }
     });
 
@@ -223,6 +174,6 @@
       }, 500);
     }
   </script>
+
 </body>
 </html>
-
